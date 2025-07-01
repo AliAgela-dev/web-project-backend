@@ -176,4 +176,28 @@ class CourseController
         // We use echo to send the response, not return.
         echo json_encode(['courses' => $courses]);
     }
+
+    public function edit($courseId)
+    {
+        $user = $this->request->user;
+        $userId = $user->sub;
+        $db = Database::getInstance();
+        $stmt = $db->prepare("SELECT * FROM users WHERE id = :id");
+        $stmt->execute(['id' => $userId]);
+        $userRecord = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$userRecord || $userRecord['role'] !== 'admin') {
+            http_response_code(403);
+            echo json_encode(['error' => 'You do not have permission to perform this action.']);
+            return;
+        }
+
+        $data = $this->request->getBody();
+        if ($this->courseModel->update($courseId, $data)) {
+            echo json_encode(['message' => 'Course updated successfully.']);
+        } else {
+            http_response_code(400);
+            echo json_encode(['error' => 'Failed to update course or no fields provided.']);
+        }
+    }
+    
 }

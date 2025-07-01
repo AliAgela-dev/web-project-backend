@@ -46,7 +46,7 @@ class AuthController
             $payload = json_encode([
                 'sub' => $user['id'],
                 'email' => $user['email'],
-                'role' => $user['role'], // Add the user's role to the token payload
+                'role' => $user['role'],
                 'iat' => time(),
                 'exp' => time() + (60 * 60)
             ]);
@@ -57,7 +57,13 @@ class AuthController
             $base64UrlSignature = $this->base64UrlEncode($signature);
             $jwt = $base64UrlHeader . "." . $base64UrlPayload . "." . $base64UrlSignature;
 
-            echo json_encode(['message' => 'Login successful', 'token' => $jwt]);
+            // Remove password from user data before returning
+            unset($user['password']);
+            echo json_encode([
+                'message' => 'Login successful',
+                'token' => $jwt,
+                'user' => $user
+            ]);
         } else {
             http_response_code(401);
             echo json_encode(['error' => 'Invalid credentials.']);

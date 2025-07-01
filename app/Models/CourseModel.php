@@ -64,4 +64,37 @@ class CourseModel
         $stmt->execute(['id' => $id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    public function update($id, $data)
+    {
+        $fields = [];
+        $params = [':id' => $id];
+        if (isset($data['title'])) {
+            $fields[] = 'title = :title';
+            $params[':title'] = $data['title'];
+        }
+        if (isset($data['speaker'])) {
+            $fields[] = 'speaker = :speaker';
+            $params[':speaker'] = $data['speaker'];
+        }
+        if (isset($data['rating'])) {
+            $fields[] = 'rating = :rating';
+            $params[':rating'] = $data['rating'];
+        }
+        if (isset($data['price'])) {
+            $fields[] = 'price = :price';
+            $params[':price'] = $data['price'];
+        }
+        if (empty($fields))
+            return false;
+        $sql = 'UPDATE courses SET ' . implode(', ', $fields) . ' WHERE id = :id';
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($params);
+    }
+    /**
+     * Updates a course by ID.
+     * @param int $id The course ID.
+     * @param array $data The data to update (title, speaker, rating, price, etc).
+     * @return bool True on success, false on failure.
+     */
 }

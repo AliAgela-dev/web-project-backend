@@ -17,7 +17,7 @@ class UserModel
 
     public function findAll()
     {
-        $stmt = $this->db->query("SELECT id, name, email, role, created_at FROM users where ");
+        $stmt = $this->db->query("SELECT id, name, email, role, created_at FROM users where role = 'user'");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -89,5 +89,32 @@ class UserModel
     {
         $stmt = $this->db->prepare("DELETE FROM users WHERE id = :id");
         return $stmt->execute(['id' => $id]);
+    }
+
+    public function updateAdmin($id, $data)
+    {
+        $fields = [];
+        $params = [':id' => $id];
+        if (isset($data['name'])) {
+            $fields[] = 'name = :name';
+            $params[':name'] = $data['name'];
+        }
+        if (isset($data['email'])) {
+            $fields[] = 'email = :email';
+            $params[':email'] = $data['email'];
+        }
+        if (isset($data['password'])) {
+            $fields[] = 'password = :password';
+            $params[':password'] = password_hash($data['password'], PASSWORD_BCRYPT);
+        }
+        if (isset($data['role'])) {
+            $fields[] = 'role = :role';
+            $params[':role'] = $data['role'];
+        }
+        if (empty($fields))
+            return false;
+        $sql = 'UPDATE users SET ' . implode(', ', $fields) . ' WHERE id = :id AND role = \'admin\'';
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($params);
     }
 }

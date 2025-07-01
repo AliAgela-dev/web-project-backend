@@ -59,6 +59,7 @@ $router->get('/api/courses', 'CourseController@index'); // List all courses
 //admins 
 $router->protectedRoute('post', '/api/users/admins', 'UserController@createAdmin');
 $router->protectedRoute('get', '/api/users/admins', 'UserController@getAdmins'); // Get all admins
+$router->protectedRoute('put', '/api/users/admins/{id}', 'UserController@editAdmin'); // Edit admin by ID
 $router->protectedRoute('delete', '/api/users/admins/{id}', 'UserController@deleteUser'); // Delete user by ID
 
 // General User Routes
@@ -68,6 +69,7 @@ $router->protectedRoute('get', '/api/my-courses', 'CourseController@getEnrolledC
 
 // Course Management (Admin Only)
 $router->protectedRoute('post', '/api/courses', 'CourseController@create');
+$router->protectedRoute('put', '/api/courses/{id}', 'CourseController@edit'); // Edit course by ID
 $router->protectedRoute('delete', '/api/courses/{id}', 'CourseController@delete');
 
 // Course Enrollment (Any Logged-in User)

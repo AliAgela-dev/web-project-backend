@@ -200,4 +200,31 @@ class UserController
         }
     }
 
+    public function editAdmin($id)
+    {
+        $user = $this->request->user;
+        $userId = $user->sub;
+        $db = Database::getInstance();
+        $stmt = $db->prepare("SELECT * FROM users WHERE id = :id");
+        $stmt->execute(['id' => $userId]);
+        $userRecord = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$userRecord || $userRecord['role'] !== 'admin') {
+            http_response_code(403);
+            echo json_encode(['error' => 'You do not have permission to perform this action.']);
+            return;
+        }
+
+        $data = $this->request->getBody();
+        if ($this->userModel->updateAdmin($id, $data)) {
+            echo json_encode(['message' => 'Admin updated successfully.']);
+        } else {
+            http_response_code(400);
+            echo json_encode(['error' => 'Failed to update admin or no fields provided.']);
+        }
+    }
+    /**
+     * Allows an admin to edit another admin's data.
+     * @param int $id The admin's user ID.
+     */
+
 }
