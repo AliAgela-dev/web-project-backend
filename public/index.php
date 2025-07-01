@@ -2,86 +2,72 @@
 // /public/index.php
 
 /**
- * =================================================================
- * Step 1: Handle Cross-Origin Resource Sharing (CORS)
- * =================================================================
+ * Autoloader
+ */
+spl_autoload_register(function ($class) {
+    $prefix = 'App\\';
+    $base_dir = __DIR__ . '/../app/';
+    $len = strlen($prefix);
+    if (strncmp($prefix, $class, $len) !== 0)
+        return;
+    $relative_class = substr($class, $len);
+    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+    if (file_exists($file))
+        require_once $file;
+});
+
+/**
+ * CORS and Global Headers
  */
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
-
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
     exit();
 }
-
-/**
- * =================================================================
- * Step 2: Set the Global Content Type
- * =================================================================
- */
 header('Content-Type: application/json');
 
 /**
- * =================================================================
- * Step 3: Application Bootstrap
- * =================================================================
- * We include our core files and kickstart the routing process.
+ * Application Bootstrap and Routing
  */
-
-// Include our core classes
-require_once __DIR__ . '/../app/Core/Request.php';
-require_once __DIR__ . '/../app/Core/Router.php';
-
-// Use the fully qualified class names
 use App\Core\Request;
 use App\Core\Router;
 
-// Create instances of the Request and Router
 $request = new Request();
 $router = new Router($request);
 
-/**
- * =================================================================
- * Step 4: Define API Routes
- * =================================================================
- * Here we map URL paths to their handler functions.
- */
-
-// A simple GET route for the root URL
+// --- Public Routes (No authentication needed) ---
 $router->get('/', function () {
     echo json_encode(['message' => 'Welcome to the API!']);
 });
+$router->post('/api/login', 'AuthController@login');
+$router->post('/api/users', 'UserController@create'); // User Registration
+$router->get('/api/courses', 'CourseController@index'); // List all courses
 
-// A GET route to fetch all users (for testing)
-$router->get('/api/users', function () {
-    // In the future, this will fetch data from a model.
-    $users = [
-        ['id' => 1, 'name' => 'Alice'],
-        ['id' => 2, 'name' => 'Bob']
-    ];
-    echo json_encode($users);
-});
 
-// A POST route to create a user (for testing)
-$router->post('/api/users', function () {
-    $request = new Request();
-    $userData = $request->getBody(); // Get data from the request body
+// --- Protected Routes (Authentication required) ---
 
-    echo json_encode([
-        'message' => 'User created successfully',
-        'data_received' => $userData
-    ]);
-});
+//admins 
+$router->protectedRoute('post', '/api/users/admins', 'UserController@createAdmin'); 
+$router->protectedRoute('get', '/api/users/admins', 'UserController@getAdmins'); // Get all admins
+$router->protectedRoute('delete', '/api/users/admins/{id}', 'UserController@deleteUser'); // Delete user by ID
+
+// General User Routes
+$router->protectedRoute('get', '/api/users', 'UserController@getAll');
+$router->protectedRoute('post', '/api/logout', 'AuthController@logout');
+$router->protectedRoute('get', '/api/my-courses', 'CourseController@getEnrolledCourses');
+
+// Course Management (Admin Only)
+$router->protectedRoute('post', '/api/courses', 'CourseController@create');
+$router->protectedRoute('delete', '/api/courses/{id}', 'CourseController@delete');
+
+// Course Enrollment (Any Logged-in User)
+$router->protectedRoute('post', '/api/courses/{id}/enroll', 'CourseController@enroll');
+$router->protectedRoute('delete', '/api/courses/{id}/leave', 'CourseController@leave');
 
 
 /**
- * =================================================================
- * Step 5: Resolve the Request
- * =================================================================
- * The router now takes over and executes the correct code
- * based on the requested URL and method.
+ * Resolve the Request
  */
 $router->resolve();
-
-?>
