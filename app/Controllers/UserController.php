@@ -192,7 +192,7 @@ class UserController
             return;
         }
 
-        if ($this->userModel->deleteById($userId)) {
+        if ($this->userModel->deleteById($id)) {
             echo json_encode(['message' => 'User deleted successfully.']);
         } else {
             http_response_code(404);
@@ -222,9 +222,4 @@ class UserController
             echo json_encode(['error' => 'Failed to update admin or no fields provided.']);
         }
     }
-    /**
-     * Allows an admin to edit another admin's data.
-     * @param int $id The admin's user ID.
-     */
-
 }
