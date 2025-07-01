@@ -1,6 +1,14 @@
 <?php
 // /public/index.php
-
+if (file_exists(__DIR__ . '/../.env')) {
+    $lines = file(__DIR__ . '/../.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0)
+            continue;
+        list($name, $value) = explode('=', $line, 2);
+        putenv(trim($name) . '=' . trim($value));
+    }
+}
 /**
  * Autoloader
  */
@@ -49,7 +57,7 @@ $router->get('/api/courses', 'CourseController@index'); // List all courses
 // --- Protected Routes (Authentication required) ---
 
 //admins 
-$router->protectedRoute('post', '/api/users/admins', 'UserController@createAdmin'); 
+$router->protectedRoute('post', '/api/users/admins', 'UserController@createAdmin');
 $router->protectedRoute('get', '/api/users/admins', 'UserController@getAdmins'); // Get all admins
 $router->protectedRoute('delete', '/api/users/admins/{id}', 'UserController@deleteUser'); // Delete user by ID
 
