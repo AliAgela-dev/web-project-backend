@@ -71,6 +71,8 @@ $router->protectedRoute('get', '/api/my-courses', 'CourseController@getEnrolledC
 $router->protectedRoute('post', '/api/courses', 'CourseController@create');
 $router->protectedRoute('put', '/api/courses/{id}', 'CourseController@edit'); // Edit course by ID
 $router->protectedRoute('delete', '/api/courses/{id}', 'CourseController@delete');
+$router->protectedRoute('post', '/api/courses/upload-image', 'UploadController@uploadCourseImage');
+
 
 // Course Enrollment (Any Logged-in User)
 $router->protectedRoute('post', '/api/courses/{id}/enroll', 'CourseController@enroll');

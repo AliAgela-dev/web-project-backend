@@ -85,6 +85,10 @@ class CourseModel
             $fields[] = 'price = :price';
             $params[':price'] = $data['price'];
         }
+        if (isset($data['image_url'])) {
+            $fields[] = 'image_url = :image_url';
+            $params[':image_url'] = $data['image_url'];
+        }
         if (empty($fields))
             return false;
         $sql = 'UPDATE courses SET ' . implode(', ', $fields) . ' WHERE id = :id';

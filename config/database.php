@@ -9,11 +9,11 @@
  */
 
 return [
-    'host' => 'dpg-d1hv2ejuibrs7380k6gg-a.oregon-postgres.render.com', 
+    'host' => '127.0.0.1', 
     'port' => 5432,
-    'dbname' => 'web_project_ll18', 
-    'user' => 'ali',      
-    'password' => getenv('DB_PASSWORD'), 
+    'dbname' => 'web-project', 
+    'user' => 'postgres',      
+    'password' => 'AA17FYD8', 
     'charset' => 'utf8mb4'
 ];
 
