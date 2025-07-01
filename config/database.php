@@ -9,7 +9,7 @@
  */
 
 return [
-    'host' => 'postgresql://ali:P42L1AGw5lAPIsJI3ryuk7r2uMSChrST@dpg-d1hv2ejuibrs7380k6gg-a.oregon-postgres.render.com', 
+    'host' => 'dpg-d1hv2ejuibrs7380k6gg-a.oregon-postgres.render.com', 
     'port' => 5432,
     'dbname' => 'web_project_ll18', 
     'user' => 'ali',      
