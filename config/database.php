@@ -10,10 +10,10 @@
 
 return [
     'host' => '127.0.0.1', // or 'localhost'
-    'port' => 3306,
-    'dbname' => 'my_api_db', // The name of your database
-    'user' => 'root',      // Your database username
-    'password' => '',          // Your database password
+    'port' => 5432,
+    'dbname' => 'web-project', // The name of your database
+    'user' => 'postgres',      // Your database username
+    'password' => 'AA17FYD8',          // Your database password
     'charset' => 'utf8mb4'
 ];
 

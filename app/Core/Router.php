@@ -3,16 +3,11 @@
 
 namespace App\Core;
 
+use App\Middleware\AuthMiddleware;
+
 class Router
 {
-    /**
-     * @var Request The request object
-     */
     protected $request;
-
-    /**
-     * @var array Stores all the registered routes
-     */
     protected $routes = [];
 
     public function __construct(Request $request)
@@ -20,61 +15,95 @@ class Router
         $this->request = $request;
     }
 
-    /**
-     * Registers a GET route.
-     *
-     * @param string $path The URL path for the route
-     * @param mixed $callback The function or controller method to execute
-     */
     public function get($path, $callback)
     {
-        $this->routes['get'][$path] = $callback;
+        $this->addRoute('get', $path, $callback);
     }
 
-    /**
-     * Registers a POST route.
-     *
-     * @param string $path The URL path for the route
-     * @param mixed $callback The function or controller method to execute
-     */
     public function post($path, $callback)
     {
-        $this->routes['post'][$path] = $callback;
+        $this->addRoute('post', $path, $callback);
     }
 
-    /**
-     * Resolves the current request and executes the corresponding callback.
-     *
-     * If no route matches, it sends a 404 Not Found response.
-     */
+    public function delete($path, $callback)
+    {
+        $this->addRoute('delete', $path, $callback);
+    }
+
+    private function addRoute($method, $path, $callback, $protected = false)
+    {
+        $this->routes[] = [
+            'method' => strtolower($method),
+            'path' => $path,
+            'callback' => $callback,
+            'protected' => $protected
+        ];
+    }
+
+    public function protectedRoute($method, $path, $callback)
+    {
+        $this->addRoute($method, $path, $callback, true);
+    }
+
     public function resolve()
     {
-        $path = $this->request->getPath();
-        $method = $this->request->getMethod();
+        $requestPath = $this->request->getPath();
+        $requestMethod = $this->request->getMethod();
+        $routeParams = [];
 
-        $callback = $this->routes[$method][$path] ?? false;
+        $route = $this->findRoute($requestMethod, $requestPath, $routeParams);
 
-        // If no route is found for the given path and method
-        if ($callback === false) {
+        if (!$route) {
             http_response_code(404);
-            // Return a JSON error message
-            echo json_encode(['error' => "404 Not Found: Cannot $method $path"]);
+            echo json_encode(['error' => "404 Not Found: Cannot " . strtoupper($requestMethod) . " $requestPath"]);
             return;
         }
 
-        // If the callback is a simple anonymous function, call it.
-        if (is_callable($callback)) {
-            // Call the function
-            call_user_func($callback);
-            return;
+        if ($route['protected']) {
+            $middleware = new AuthMiddleware();
+            $this->request->user = $middleware->handle();
         }
 
-        // If the callback is a string in the 'Controller@method' format
+        $callback = $route['callback'];
+
         if (is_string($callback)) {
-            // This logic will be implemented when we create controllers.
-            // For now, we'll just echo a message.
-            echo json_encode(['message' => "Route found for $path, will call: $callback"]);
+            $parts = explode('@', $callback);
+            $controllerClass = "App\\Controllers\\{$parts[0]}";
+            $methodName = $parts[1];
+
+            if (class_exists($controllerClass)) {
+                // --- THIS IS THE FIX ---
+                // We must pass the router's request object into the controller's constructor.
+                $controller = new $controllerClass($this->request);
+
+                if (method_exists($controller, $methodName)) {
+                    call_user_func_array([$controller, $methodName], $routeParams);
+                    return;
+                }
+            }
+        }
+
+        if (is_callable($callback)) {
+            call_user_func_array($callback, $routeParams);
             return;
         }
+
+        http_response_code(500);
+        echo json_encode(['error' => 'Invalid route configuration.']);
+    }
+
+    private function findRoute($method, $path, &$params)
+    {
+        foreach ($this->routes as $route) {
+            if ($route['method'] !== $method)
+                continue;
+            $pattern = "#^" . preg_replace('/\{(\w+)\}/', '(\w+)', $route['path']) . "$#";
+            if (preg_match($pattern, $path, $matches)) {
+                array_shift($matches);
+                $params = $matches;
+                return $route;
+            }
+        }
+        return null;
     }
 }

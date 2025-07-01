@@ -45,8 +45,8 @@ class Database
         if (self::$instance === null) {
             $config = require_once __DIR__ . '/../../config/database.php';
 
-            // Data Source Name (DSN)
-            $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['dbname']};charset={$config['charset']}";
+            // Data Source Name (DSN) for PostgreSQL
+            $dsn = "pgsql:host={$config['host']};port={$config['port']};dbname={$config['dbname']}";
 
             // Options for PDO
             $options = [
