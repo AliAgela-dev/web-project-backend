@@ -48,7 +48,7 @@ class AuthController
                 'email' => $user['email'],
                 'role' => $user['role'],
                 'iat' => time(),
-                'exp' => time() + (60 * 60)
+                'exp' => time() + (60 * 60 * 3)
             ]);
 
             $base64UrlHeader = $this->base64UrlEncode($header);
